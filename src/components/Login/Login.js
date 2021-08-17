@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
@@ -10,21 +10,32 @@ const Login = (props) => {
   const [enteredPassword, setEnteredPassword] = useState('');
   const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
+  
+  useEffect(() => {
+    const interval = setTimeout(() => {
+      console.log("inside timeout function");
+      setFormIsValid(
+        enteredEmail.includes('@') && enteredPassword.trim().length > 6
+      );
+    }, 500);
+
+    return () => {
+      //we can use this return function as a cleanup function to clean intervals or temp variables
+      console.log("CLEAN UP ");
+      clearTimeout(interval);
+    }
+  }, [enteredEmail, enteredPassword]);
+
+  // useEffect(() => {
+  //   console.log("second use effect");
+  // }, [dummyVal]);//demonstrating use effect on prop changes
 
   const emailChangeHandler = (event) => {
     setEnteredEmail(event.target.value);
-
-    setFormIsValid(
-      event.target.value.includes('@') && enteredPassword.trim().length > 6
-    );
   };
 
   const passwordChangeHandler = (event) => {
     setEnteredPassword(event.target.value);
-
-    setFormIsValid(
-      event.target.value.trim().length > 6 && enteredEmail.includes('@')
-    );
   };
 
   const validateEmailHandler = () => {
