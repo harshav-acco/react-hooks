@@ -1,45 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
 
+const emailReducer = (state, action) => {
+  if (action.type === "EMAIL_CHANGED") {
+    return {
+      value: action.value,
+      isValid: action.value.includes('@')
+    }
+  }
+  return { value: "", isValid: null };
+}
+
 const Login = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState('');
+  // const [enteredEmail, setEnteredEmail] = useState('');
   const [emailIsValid, setEmailIsValid] = useState();
   const [enteredPassword, setEnteredPassword] = useState('');
   const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
-  
-  useEffect(() => {
-    const interval = setTimeout(() => {
-      console.log("inside timeout function");
-      setFormIsValid(
-        enteredEmail.includes('@') && enteredPassword.trim().length > 6
-      );
-    }, 500);
 
-    return () => {
-      //we can use this return function as a cleanup function to clean intervals or temp variables
-      console.log("CLEAN UP ");
-      clearTimeout(interval);
-    }
-  }, [enteredEmail, enteredPassword]);
+  const [emailState, dispatchEmailActions] = useReducer(emailReducer, {
+    value: "",
+    isValid: null
+  });
+  
+  // useEffect(() => {
+  //   const interval = setTimeout(() => {
+  //     console.log("inside timeout function");
+  //     setFormIsValid(
+  //       enteredEmail.includes('@') && enteredPassword.trim().length > 6
+  //     );
+  //   }, 500);
+
+  //   return () => {
+  //     //we can use this return function as a cleanup function to clean intervals or temp variables
+  //     console.log("CLEAN UP ");
+  //     clearTimeout(interval);
+  //   }
+  // }, [enteredEmail, enteredPassword]);
 
   // useEffect(() => {
   //   console.log("second use effect");
   // }, [dummyVal]);//demonstrating use effect on prop changes
 
   const emailChangeHandler = (event) => {
-    setEnteredEmail(event.target.value);
+    // setEnteredEmail(event.target.value);
+    dispatchEmailActions({
+      type: "EMAIL_CHANGED",
+      value: event.target.value,
+    });
+
+    setFormIsValid(
+      enteredPassword.trim().length > 6 && event.target.value.includes('@')
+    );
   };
 
   const passwordChangeHandler = (event) => {
     setEnteredPassword(event.target.value);
+
+    setFormIsValid(
+      event.target.value.trim().length > 6 && emailState.value.includes('@')
+    );
   };
 
   const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes('@'));
+    setEmailIsValid(emailState.isValid);
   };
 
   const validatePasswordHandler = () => {
@@ -48,7 +75,7 @@ const Login = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(emailState.value, enteredPassword);
   };
 
   return (
@@ -63,7 +90,7 @@ const Login = (props) => {
           <input
             type="email"
             id="email"
-            value={enteredEmail}
+            value={emailState.value}
             onChange={emailChangeHandler}
             onBlur={validateEmailHandler}
           />
